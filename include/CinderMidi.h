@@ -25,26 +25,26 @@
 
 #include "RtMidi.h"
 
-#define internal static
-#define local_persist static
-#define global_variable static
-
-typedef int8_t i8;
-typedef int16_t i16;
-typedef int32_t i32;
-typedef int64_t i64;
-
-typedef uint8_t ui8;
-typedef uint16_t ui16;
-typedef uint32_t ui32;
-typedef uint64_t ui64;
-
-typedef size_t size;
-
-typedef float r32;
-typedef double r64;
-
-typedef int32_t b32;
+// #define internal static
+// #define local_persist static
+// #define global_variable static
+// 
+// typedef int8_t i8;
+// typedef int16_t i16;
+// typedef int32_t i32;
+// typedef int64_t i64;
+// 
+// typedef uint8_t ui8;
+// typedef uint16_t ui16;
+// typedef uint32_t ui32;
+// typedef uint64_t ui64;
+// 
+// typedef size_t size;
+// 
+// typedef float r32;
+// typedef double r64;
+// 
+// typedef int32_t b32;
 
 typedef unsigned int MidiStatus;
 enum MidiStatus_ {
@@ -126,16 +126,16 @@ namespace cinder { namespace midi {
 
   //! ---- Structure for the passing of midi messages ---- !//
   struct MidiMessage {
-    i32 Port;
-    i32 Channel;
-    i32 StatusCode;
-    i32 ByteOne;
-    i32 ByteTwo;
-    i32 Value;			  //! depends on message status type
-    ui32 Pitch;			  //! 0 - 127
-    ui32 Velocity;		//! 0 - 127
-    ui32 Control;		  //! 0 - 127
-    r32 TimeStamp;
+    int32_t Port;
+    int32_t Channel;
+    int32_t StatusCode;
+    int32_t ByteOne;
+    int32_t ByteTwo;
+    int32_t Value;			  //! depends on message status type
+    uint32_t Pitch;			  //! 0 - 127
+    uint32_t Velocity;		//! 0 - 127
+    uint32_t Control;		  //! 0 - 127
+    float TimeStamp;
     std::string Name;
 
     MidiMessage& copy( const  MidiMessage& other );
@@ -143,30 +143,30 @@ namespace cinder { namespace midi {
 
   //! ---- Structure for Midi Input ---- !//
   struct MidiInput {
-    ui32 currentPort;      //! -1 if the port isn't open
-    ui32 portCount;        // NOTE(hunter): is this needed?
-    std::string portName;  //! Set after opening a port
+    uint32_t mPort;      //! -1 if the port isn't open
+    uint32_t mPortCount;        // NOTE(hunter): is this needed?
+    std::string mPortName;  //! Set after opening a port
 
     //! A vector of ALL the possible incoming midi notes messages.  
     //! Each vector index corresponds with midi note number (aka the note's pitch) from 0 to 127.
     //! Each value corresponds with the note's velocity (aka the note's volume), also from 0 to 127
     //! If the velocity is greater > 0 then the note is considered on, otherwise it's off.
     //! See this image for more details: http://imgbin.org/index.php?page=image&id=22351
-    std::vector <ui32> notesBuffer;
+    std::vector <uint32_t> mNotesBuffer;
 
     //! A vector of ALL the possible incoming midi controller messages.  
     //! Each vector index corresponds with midi control number (aka Controller Name) from 0 to 127.
     //! Each value corresponds with the control's value, also from 0 to 127.  If the value is 
     //! greater > 0 (usally 127 for most controls) then the control is considered on (or set), otherwise it's off.
     //! //! See this website for more details: http://www.indiana.edu/~emusic/cntrlnumb.html
-    std::vector <ui32> controlBuffer;
+    std::vector <uint32_t> mControlBuffer;
 
     // TODO(hunter): Better define after touch messages? This may not be needed as 
     // they should already show as velocity in the notes buffer.
 
     MidiInput();                           
 
-    b32 OpenPort( ui32 CurrentPort = 0 );  //! default's to port 0
+    bool OpenPort( uint32_t CurrentPort = 0 );  //! default's to port 0
     void ClosePort();                      //! Closes port AND removes RtMidi callback
     
     //! Cinder-MidiIn Callback
@@ -202,7 +202,7 @@ namespace cinder { namespace midi {
     //!         } break;
     //!     }
     //! }
-    boost::signals2::signal<void( MidiMessage )> MidiInCallback;
+    boost::signals2::signal<void( MidiMessage )> mMidiInCallback;
     
     //! Get a vector of output port names.
     //! Each vector index corresponds with the name's port number.
@@ -210,21 +210,21 @@ namespace cinder { namespace midi {
     const std::vector<std::string> GetPortList();
     
     //! Convenience functions to RtMidi's API
-    inline const std::string GetPortName( ui32 Port ) const { return MidiIn->getPortName( Port ); } 
-    inline void IgnoreTypes( bool sysex, bool time, bool midisense ) { MidiIn->ignoreTypes( sysex, time, midisense ); }
+    inline const std::string GetPortName( uint32_t Port ) const { return MidiIn->getPortName( Port ); }
+    inline void IgnoreTypes( bool sysex, bool time, bool midisense ) const { MidiIn->ignoreTypes( sysex, time, midisense ); }
 
   protected:
     std::unique_ptr<RtMidiIn> MidiIn;
     void ProcessMessage( double deltatime, std::vector<unsigned char> *message );
-    inline internal void RtMidiInCallback( double deltatime, std::vector< unsigned char > *message , void *userData )  {
+    inline static void RtMidiInCallback( double deltatime, std::vector< unsigned char > *message , void *userData )  {
       ( ( MidiInput* ) userData )->ProcessMessage( deltatime, message );
     }
 
   };
 
   struct MidiOutput {
-    ui32 CurrentPort;
-    ui32 PortCount;
+    uint32_t CurrentPort;
+    uint32_t PortCount;
     std::string Name;
 
    /// Set the output client name (optional).
@@ -244,13 +244,13 @@ namespace cinder { namespace midi {
 
     /// Get the name of an output port by it's number
     /// \return "" if number is invalid
-    const std::string getPortName( ui32 portNumber ) const { return MidiOut->getPortName( portNumber ); };
+    const std::string getPortName( uint32_t portNumber ) const { return MidiOut->getPortName( portNumber ); };
 
     /// \section Connection
 
     /// Connect to an output port.
     /// Setting port = 0 will open the first available
-    bool openPort( ui32 portNumber = 0 );
+    bool openPort( uint32_t portNumber = 0 );
 
     /// Create and connect to a virtual output port (MacOS and Linux ALSA only).
     /// allows for connections between software

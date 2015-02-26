@@ -41,25 +41,25 @@ namespace cinder { namespace midi {
     }
 
     MidiIn->getCurrentApi();
-    portCount = MidiIn->getPortCount();
+    mPortCount = MidiIn->getPortCount();
 
     for ( int i = 0; i < 127; ++i ) {
-      notesBuffer.push_back( 0 );
-      controlBuffer.push_back( 0 );
+      mNotesBuffer.push_back( 0 );
+      mControlBuffer.push_back( 0 );
     }
   }
 
-  b32 MidiInput::OpenPort( ui32 port /*= 0 */ ) {
+  bool MidiInput::OpenPort( uint32_t port /*= 0 */ ) {
     // Check available ports.
-    portCount = MidiIn->getPortCount();
-    if ( ( portCount == 0 ) || ( ( port + 1 ) > portCount ) ) {
+    mPortCount = MidiIn->getPortCount();
+    if ( ( mPortCount == 0 ) || ( ( port + 1 ) > mPortCount ) ) {
       std::cout << "No ports available!\n";
       return false;
     }
 
-    currentPort = port;
-    portName = MidiIn->getPortName( currentPort );
-    MidiIn->openPort( currentPort );
+    mPort = port;
+    mPortName = MidiIn->getPortName( mPort );
+    MidiIn->openPort( mPort );
 
     // Set our callback function.This should be done immediately after
     // opening the port to avoid having incoming messages written to the
@@ -87,8 +87,8 @@ namespace cinder { namespace midi {
     size_t NumOfBytes = message->size();
 
     MidiMessage newMsg;
-    newMsg.Port = currentPort;
-    newMsg.Name = portName.c_str();
+    newMsg.Port = mPort;
+    newMsg.Name = mPortName.c_str();
     if ( ( message->at( 0 ) ) >= MIDI_SYSEX ) {
       newMsg.StatusCode = ( MidiStatus ) ( message->at( 0 ) & 0xFF );
       newMsg.Channel = 0;
@@ -101,17 +101,17 @@ namespace cinder { namespace midi {
       case MIDI_NOTE_ON: {
         newMsg.Pitch = ( int ) message->at( 1 );
         newMsg.Velocity = ( int ) message->at( 2 );
-        notesBuffer[ newMsg.Pitch ] = newMsg.Velocity;
+        mNotesBuffer[ newMsg.Pitch ] = newMsg.Velocity;
       } break;
       case MIDI_NOTE_OFF: {
         newMsg.Pitch = ( int ) message->at( 1 );
         newMsg.Velocity = ( int ) message->at( 2 );
-        notesBuffer[ newMsg.Pitch ] = newMsg.Velocity;
+        mNotesBuffer[ newMsg.Pitch ] = newMsg.Velocity;
       } break;
       case MIDI_CONTROL_CHANGE: {
         newMsg.Control = ( int ) message->at( 1 );
         newMsg.Value = ( int ) message->at( 2 );
-        controlBuffer[ newMsg.Control ] = newMsg.Value;
+        mControlBuffer[ newMsg.Control ] = newMsg.Value;
       } break;
       case MIDI_PROGRAM_CHANGE:
       case MIDI_AFTERTOUCH: {
@@ -124,21 +124,22 @@ namespace cinder { namespace midi {
       case MIDI_POLY_AFTERTOUCH: {
         newMsg.Pitch = ( int ) message->at( 1 );
         newMsg.Value = ( int ) message->at( 2 );
-        notesBuffer[ newMsg.Pitch ] = newMsg.Value;
+        mNotesBuffer[ newMsg.Pitch ] = newMsg.Value;
       } break;
       default: {
 
       } break;
     }
-    if ( &MidiInCallback ) {
-      MidiInCallback( newMsg );
+    if ( &mMidiInCallback ) {
+      mMidiInCallback( newMsg );
     }
   }
 
-  const std::vector<std::string> MidiInput::GetPortList() {
+  const std::vector<std::string> MidiInput::GetPortList()
+{
     std::vector<std::string> portList;
-    portCount = MidiIn->getPortCount();
-    for ( unsigned int i = 0; i < portCount; ++i ) {
+    mPortCount = MidiIn->getPortCount();
+    for ( unsigned int i = 0; i < mPortCount; ++i ) {
       portList.push_back( MidiIn->getPortName( i ) );
     }
     return portList;

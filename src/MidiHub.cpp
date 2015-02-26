@@ -100,7 +100,7 @@ namespace cinder { namespace midi {
 	// --------------------------------------------------------------------------------------
 	bool Hub::isDeviceConnected(std::string _name) {
     for ( size_t i = 0; i < midiInPool.size(); i++ )
-      if ( midiInPool[i]->portName == _name )
+      if ( midiInPool[i]->mPortName == _name )
 				return true;
 		/*
 		 for (int i = 0 ; i < midiOutPool.size() ; i++)
