@@ -202,7 +202,8 @@ namespace cinder { namespace midi {
     //!         } break;
     //!     }
     //! }
-    boost::signals2::signal<void( MidiMessage )> mMidiInCallback;
+    //boost::signals2::signal<void( MidiMessage )> mMidiInCallback;
+    std::function<void( MidiMessage )> mMidiInCallback;
     
     //! Get a vector of output port names.
     //! Each vector index corresponds with the name's port number.
